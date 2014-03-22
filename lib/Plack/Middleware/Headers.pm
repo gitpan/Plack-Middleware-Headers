@@ -9,7 +9,7 @@ use Plack::Util::Accessor qw(set append unset code when);
 use Plack::Util;
 use Scalar::Util qw(reftype);
 
-our $VERSION = '0.10'; #VERSION
+our $VERSION = '0.11'; #VERSION
 
 sub prepare_app {
     my $self = shift; 
@@ -19,8 +19,11 @@ sub prepare_app {
         $self->when( sub {
             my @headers = @_;
             my $match = 0;
-            while (my($key, $check) = splice @when, 0, 2) {
+            for (my $i = 0; $i < @when; $i += 2) {
+                my ($key, $check) = ($when[ $i ], $when[ $i + 1 ]);
+
                 my $value = Plack::Util::header_get(\@headers, $key);
+
                 if (!defined $check) {            # missing header check
                     next if defined $value;     
                 } elsif( !defined $value ) {      # header missing
@@ -30,6 +33,7 @@ sub prepare_app {
                 } elsif ( $value ne $check ) {    # exact header
                     next;
                 }
+
                 return 1; 
             }
             return;
@@ -77,13 +81,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Plack::Middleware::Headers - modify HTTP response headers
 
 =head1 VERSION
 
-version 0.10
+version 0.11
 
 =head1 SYNOPSIS
 
@@ -157,15 +163,13 @@ created by Masahiro Chiba. Additional contributions by Wallace Reis.
 
 L<Plack::Middleware>, L<Plack::Builder>
 
-=encoding utf8
-
 =head1 AUTHOR
 
 Jakob Voß
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2013 by Jakob Voß.
+This software is copyright (c) 2014 by Jakob Voß.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
